@@ -1,0 +1,21 @@
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Rainmeter backup files
+*.bak
+*.old
+*.tmp
+
+# Editor / IDE settings
+.vscode/
+.idea/
+
+# Proprietary font binaries
+@Resources/Fonts/*.ttf
+@Resources/Fonts/*.otf
+@Resources/Fonts/*.woff
+@Resources/Fonts/*.woff2
