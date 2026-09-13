@@ -70,6 +70,43 @@ local SOLAR_TERMS_DEF = {
     { name = "冬至", m = 12, c = 21.94 }
 }
 
+-- Convert any UTF-8 string to Rainmeter Character Reference Variables [\xXXXX]
+-- This ensures 100% identical Unicode rendering across all Windows code pages (ANSI/GBK/CP1252)
+local function toUnicode(str)
+    if not str then return "" end
+    local result = {}
+    local i = 1
+    local len = string.len(str)
+    while i <= len do
+        local b = string.byte(str, i)
+        if b < 0x80 then
+            table.insert(result, string.char(b))
+            i = i + 1
+        elseif b >= 0xC0 and b < 0xE0 then
+            local b2 = string.byte(str, i + 1) or 0
+            local cp = (b - 0xC0) * 0x40 + (b2 - 0x80)
+            table.insert(result, string.format("[\\x%04X]", cp))
+            i = i + 2
+        elseif b >= 0xE0 and b < 0xF0 then
+            local b2 = string.byte(str, i + 1) or 0
+            local b3 = string.byte(str, i + 2) or 0
+            local cp = (b - 0xE0) * 0x1000 + (b2 - 0x80) * 0x40 + (b3 - 0x80)
+            table.insert(result, string.format("[\\x%04X]", cp))
+            i = i + 3
+        elseif b >= 0xF0 and b < 0xF8 then
+            local b2 = string.byte(str, i + 1) or 0
+            local b3 = string.byte(str, i + 2) or 0
+            local b4 = string.byte(str, i + 3) or 0
+            local cp = (b - 0xF0) * 0x40000 + (b2 - 0x80) * 0x1000 + (b3 - 0x80) * 0x40 + (b4 - 0x80)
+            table.insert(result, string.format("[\\x%04X]", cp))
+            i = i + 4
+        else
+            i = i + 1
+        end
+    end
+    return table.concat(result)
+end
+
 -- Gregorian Julian Day Number
 local function toJDN(y, m, d)
     local a = math.floor((14 - m) / 12)
@@ -268,7 +305,7 @@ function Update()
             else
                 -- Chinese Lunar Calendar representation
                 if not slot.current then
-                    colStr = "·"
+                    colStr = toUnicode("·")
                 else
                     local sYear = year
                     local sMonth = month + slot.monthOffset
@@ -283,13 +320,13 @@ function Update()
                     -- Check 24 Solar Term on this day
                     local termOnDay = getSolarTermOnDay(sYear, sMonth, slot.day)
                     if termOnDay then
-                        colStr = termOnDay
+                        colStr = toUnicode(termOnDay)
                     else
                         local sLunar = getLunarDate(sYear, sMonth, slot.day)
                         if sLunar.day == 1 then
-                            colStr = (sLunar.isLeap and "闰" or "") .. LUNAR_MONTHS[sLunar.month]
+                            colStr = toUnicode((sLunar.isLeap and "闰" or "") .. LUNAR_MONTHS[sLunar.month])
                         else
-                            colStr = LUNAR_DAYS[sLunar.day] or tostring(sLunar.day)
+                            colStr = toUnicode(LUNAR_DAYS[sLunar.day] or tostring(sLunar.day))
                         end
                     end
 
@@ -360,38 +397,39 @@ function Update()
         local lunarDayStr = LUNAR_DAYS[lunarToday.day] or string.format("%02d", lunarToday.day)
         local currentSolarTerm = getCurrentSolarTerm(year, month, day)
 
-        SKIN:Bang('!SetVariable', 'CalDayNum', lunarDayStr)
-        SKIN:Bang('!SetVariable', 'CalMonthYear', yearGanZhi .. " " .. monthStr)
+        SKIN:Bang('!SetVariable', 'CalDayNum', toUnicode(lunarDayStr))
+        SKIN:Bang('!SetVariable', 'CalMonthYear', toUnicode(yearGanZhi .. " " .. monthStr))
 
         -- Header text
+        local headerText = toUnicode("SYS: CHRONO // 农历")
         if SKIN:GetMeter('MeterCalHeaderText') then
-            SKIN:Bang('!SetOption', 'MeterCalHeaderText', 'Text', 'SYS: CHRONO // 农历')
+            SKIN:Bang('!SetOption', 'MeterCalHeaderText', 'Text', headerText)
         end
         if SKIN:GetMeter('MeterCalHeader') then
-            SKIN:Bang('!SetOption', 'MeterCalHeader', 'Text', 'SYS: CHRONO // 农历')
+            SKIN:Bang('!SetOption', 'MeterCalHeader', 'Text', headerText)
         end
 
         -- Left Panel: Lunar Day, Current Solar Term (节气), and 天干地支
-        SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', 'CYCLE // 农历')
+        SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', toUnicode("CYCLE // 农历"))
         SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontFace', '#FontSub#')
         SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontSize', '28')
-        SKIN:Bang('!SetOption', 'MeterCalDayVal', 'Text', lunarDayStr)
+        SKIN:Bang('!SetOption', 'MeterCalDayVal', 'Text', toUnicode(lunarDayStr))
 
         -- Display Current 节气 instead of Week Number
         SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontFace', '#FontSub#')
         SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontSize', '15')
-        SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'Text', currentSolarTerm)
+        SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'Text', toUnicode(currentSolarTerm))
 
         -- Display 天干地支 instead of Month/Year
         SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontFace', '#FontSub#')
         SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '9')
-        SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', yearGanZhi .. " " .. monthStr)
+        SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', toUnicode(yearGanZhi .. " " .. monthStr))
 
         -- Japanese Weekday Terms for Weekday Headers (月, 火, 水, 木, 金, 土, 日)
         local jpHeaders = { "周", "月", "火", "水", "木", "金", "土", "日" }
         for i = 0, 7 do
             SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontFace', '#FontSub#')
-            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'Text', jpHeaders[i + 1])
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'Text', toUnicode(jpHeaders[i + 1]))
         end
 
         -- Column texts in Lunar format (YorHa Mincho font with 8.5pt for clean CJK alignment)
