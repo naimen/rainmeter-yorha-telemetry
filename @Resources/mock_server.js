@@ -139,11 +139,11 @@ function getTelemetryJson() {
         id: 2,
         Text: 'Nuvoton NCT6798D',
         Children: [
-          { id: 201, Text: 'Fan #1 (CPU)', Value: state.fans.cpu, SensorId: '/lpc/nct6798d/0/fan/1' },
-          { id: 202, Text: 'Fan #2 (Exhaust)', Value: state.fans.exhaust, SensorId: '/lpc/nct6798d/0/fan/2' },
-          { id: 203, Text: 'Fan #3 (Top)', Value: state.fans.top, SensorId: '/lpc/nct6798d/0/fan/3' },
-          { id: 204, Text: 'Fan #4 (Front)', Value: state.fans.front, SensorId: '/lpc/nct6798d/0/fan/4' },
-          { id: 206, Text: 'Fan #6 (Side)', Value: state.fans.side, SensorId: '/lpc/nct6798d/0/fan/6' }
+          { id: 201, Text: 'Fan #1 (CPU)', Value: state.fans.cpu, SensorId: '/lpc/nct6798d/0/fan/0' },
+          { id: 202, Text: 'Fan #2 (Exhaust)', Value: state.fans.exhaust, SensorId: '/lpc/nct6798d/0/fan/1' },
+          { id: 203, Text: 'Fan #3 (Top)', Value: state.fans.top, SensorId: '/lpc/nct6798d/0/fan/2' },
+          { id: 204, Text: 'Fan #4 (Front)', Value: state.fans.front, SensorId: '/lpc/nct6798d/0/fan/3' },
+          { id: 206, Text: 'Fan #6 (Side)', Value: state.fans.side, SensorId: '/lpc/nct6798d/0/fan/5' }
         ]
       },
 
