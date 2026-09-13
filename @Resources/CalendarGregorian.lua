@@ -88,6 +88,7 @@ function Gregorian.Render(context)
     for c = 0, 7 do
         SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontFace', '#FontAnime#')
         SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontSize', '15')
+        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'LineSpacing', '0')
     end
     SKIN:Bang('!SetOption', 'MeterCalCol_0', 'Text', table.concat(colWk, "\n"))
 

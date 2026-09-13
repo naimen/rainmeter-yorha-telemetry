@@ -344,13 +344,14 @@ function Lunar.Render(context)
     end
 
     -- Apply Column Texts
-    SKIN:Bang('!SetOption', 'MeterCalCol_0', 'FontFace', '#FontSub#')
-    SKIN:Bang('!SetOption', 'MeterCalCol_0', 'FontSize', '8.5')
+    for c = 0, 7 do
+        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontFace', '#FontSub#')
+        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontSize', '10')
+        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'LineSpacing', '6')
+    end
     SKIN:Bang('!SetOption', 'MeterCalCol_0', 'Text', table.concat(colWkLunar, "\n"))
 
     for c = 1, 7 do
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontFace', '#FontSub#')
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontSize', '8.5')
         SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'Text', table.concat(colDays[c], "\n"))
     end
 end
