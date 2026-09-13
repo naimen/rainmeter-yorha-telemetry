@@ -2,7 +2,8 @@
 -- YoRHa Tactical Calendar Script
 -- Supports:
 --   1. Standard Gregorian Calendar (English YoRHa HUD)
---   2. Chinese Lunar Calendar (农历) with 24 Solar Terms (二十四节气),
+--   2. Chinese Lunar Calendar (农历) with 24 Solar Terms (二十四节气) in Column 0,
+--      Pure Lunar Dates (初一..三十) in Days Matrix,
 --      Heavenly Stems & Earthly Branches (天干地支), and Japanese Weekdays (曜日)
 -- ==============================================================================
 
@@ -270,6 +271,7 @@ function Update()
     end
 
     local colWk = {}
+    local colWkLunar = {}
     local colDays = { {}, {}, {}, {}, {}, {}, {} }
 
     for r = 1, 5 do
@@ -288,6 +290,36 @@ function Update()
         local rowWk = tonumber(os.date("%V", rowTime)) or tonumber(os.date("%W", rowTime)) or 0
         table.insert(colWk, string.format("%02d", rowWk))
 
+        -- Check if any day in this week row has a 24 Solar Term (节气)
+        local rowSolarTerm = nil
+        for c = 1, 7 do
+            local sIdx = (r - 1) * 7 + c
+            local slot = slots[sIdx]
+            if slot.current then
+                local sYear = year
+                local sMonth = month + slot.monthOffset
+                if sMonth < 1 then
+                    sMonth = 12
+                    sYear = sYear - 1
+                elseif sMonth > 12 then
+                    sMonth = 1
+                    sYear = sYear + 1
+                end
+
+                local term = getSolarTermOnDay(sYear, sMonth, slot.day)
+                if term then
+                    rowSolarTerm = term
+                    break
+                end
+            end
+        end
+
+        if rowSolarTerm then
+            table.insert(colWkLunar, toUnicode(rowSolarTerm))
+        else
+            table.insert(colWkLunar, toUnicode("·"))
+        end
+
         for c = 1, 7 do
             local sIdx = (r - 1) * 7 + c
             local slot = slots[sIdx]
@@ -303,7 +335,7 @@ function Update()
                     colStr = tostring(slot.day)
                 end
             else
-                -- Chinese Lunar Calendar representation
+                -- Chinese Lunar Calendar: Pure lunar dates (初一..三十)
                 if not slot.current then
                     colStr = toUnicode("·")
                 else
@@ -317,18 +349,9 @@ function Update()
                         sYear = sYear + 1
                     end
 
-                    -- Check 24 Solar Term on this day
-                    local termOnDay = getSolarTermOnDay(sYear, sMonth, slot.day)
-                    if termOnDay then
-                        colStr = toUnicode(termOnDay)
-                    else
-                        local sLunar = getLunarDate(sYear, sMonth, slot.day)
-                        if sLunar.day == 1 then
-                            colStr = toUnicode((sLunar.isLeap and "闰" or "") .. LUNAR_MONTHS[sLunar.month])
-                        else
-                            colStr = toUnicode(LUNAR_DAYS[sLunar.day] or tostring(sLunar.day))
-                        end
-                    end
+                    local sLunar = getLunarDate(sYear, sMonth, slot.day)
+                    local dayName = LUNAR_DAYS[sLunar.day] or string.format("%02d", sLunar.day)
+                    colStr = toUnicode(dayName)
 
                     if slot.isToday then
                         colStr = "{" .. colStr .. "}"
@@ -425,18 +448,19 @@ function Update()
         SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '9')
         SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', toUnicode(yearGanZhi .. " " .. monthStr))
 
-        -- Japanese Weekday Terms for Weekday Headers (月, 火, 水, 木, 金, 土, 日)
-        local jpHeaders = { "周", "月", "火", "水", "木", "金", "土", "日" }
+        -- Weekday Headers: Column 0 is 气 (Solar Term column), Columns 1..7 are Japanese Weekdays (月..日)
+        local jpHeaders = { "气", "月", "火", "水", "木", "金", "土", "日" }
         for i = 0, 7 do
             SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontFace', '#FontSub#')
             SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'Text', toUnicode(jpHeaders[i + 1]))
         end
 
-        -- Column texts in Lunar format (YorHa Mincho font with 8.5pt for clean CJK alignment)
+        -- Column 0: Displays Solar Term for that week row (e.g. 白露, 秋分, or · if none)
         SKIN:Bang('!SetOption', 'MeterCalCol_0', 'FontFace', '#FontSub#')
         SKIN:Bang('!SetOption', 'MeterCalCol_0', 'FontSize', '8.5')
-        SKIN:Bang('!SetOption', 'MeterCalCol_0', 'Text', table.concat(colWk, "\n"))
+        SKIN:Bang('!SetOption', 'MeterCalCol_0', 'Text', table.concat(colWkLunar, "\n"))
 
+        -- Columns 1..7: Pure Lunar Dates (初一..三十)
         for c = 1, 7 do
             SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontFace', '#FontSub#')
             SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontSize', '8.5')
