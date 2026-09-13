@@ -39,7 +39,7 @@ You can also use 100% free and open-source Google Fonts (SIL Open Font License):
 - **Secondary & Calendar**: **[Zen Antique Soft](https://fonts.google.com/specimen/Zen+Antique+Soft)** or **[M PLUS 1p](https://fonts.google.com/specimen/M+PLUS+1p)**
 - **Numerals & Serifs**: **[Cinzel](https://fonts.google.com/specimen/Cinzel)** or **[Grenze](https://fonts.google.com/specimen/Grenze)**
 
-You can configure active font families at any time in `@Resources/Variables.inc` (`#FontHeader#` and `#FontClockNum#`).
+You can configure active font families at any time in `@Resources/Variables-Light.inc / Variables-Dark.inc` (`#FontHeader#` and `#FontClockNum#`).
 
 
 

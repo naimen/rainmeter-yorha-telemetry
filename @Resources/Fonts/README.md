@@ -1,4 +1,4 @@
-﻿# Typography & Fonts Guide
+# Typography & Fonts Guide
 
 Due to copyright and licensing policies, font binaries are not bundled directly in this repository.
 
@@ -26,7 +26,7 @@ You can also use 100% free and open-source Google Fonts (SIL Open Font License) 
 
 ### Configuring Fonts
 
-To switch or customize fonts, edit `@Resources/Variables.inc` (or `Variables-Light.inc` / `Variables-Dark.inc`):
+To switch or customize fonts, edit `@Resources/Variables-Light.inc` or `Variables-Dark.inc`:
 
 ```ini
 FontHeader=Zen Kaku Gothic New
