@@ -243,7 +243,7 @@ function Lunar.Render(context)
     SKIN:Bang('!SetVariable', 'CalMonthYear', toUnicode(yearGanZhi .. " " .. monthStr))
 
     -- Header Badge
-    local headerText = toUnicode("SYS: CHRONO // 农历·零")
+    local headerText = toUnicode("SYS: CHRONO // 农历·〇")
     if SKIN:GetMeter('MeterCalHeaderText') then
         SKIN:Bang('!SetOption', 'MeterCalHeaderText', 'Text', headerText)
     end
@@ -255,7 +255,7 @@ function Lunar.Render(context)
     end
 
     -- Left Panel: Day & Status
-    SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', toUnicode("周 // 天"))
+    SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', toUnicode("CYCLE // 星耀"))
     SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontFace', '#FontSub#')
     SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontSize', '28')
     SKIN:Bang('!SetOption', 'MeterCalDayVal', 'Text', toUnicode(lunarDayStr))
@@ -310,7 +310,7 @@ function Lunar.Render(context)
         if rowSolarTerm then
             table.insert(colWkLunar, toUnicode(rowSolarTerm))
         else
-            table.insert(colWkLunar, toUnicode("□"))
+            table.insert(colWkLunar, toUnicode("·"))
         end
 
         for c = 1, 7 do
@@ -336,10 +336,10 @@ function Lunar.Render(context)
                 colStr = toUnicode(dayName)
 
                 if slot.isToday then
-                    colStr = "{" .. colStr .. "}"
+                    colStr = "｢" .. colStr .. "｣"
                 end
             end
-            table.insert(colDays[c], colStr)
+            table.insert(colDays[c], toUnicode(colStr))
         end
     end
 
