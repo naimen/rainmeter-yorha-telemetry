@@ -250,6 +250,9 @@ function Lunar.Render(context)
     if SKIN:GetMeter('MeterCalHeader') then
         SKIN:Bang('!SetOption', 'MeterCalHeader', 'Text', headerText)
     end
+    if SKIN:GetMeter('MeterCalMicroLabel') then
+        SKIN:Bang('!SetOption', 'MeterCalMicroLabel', 'Text', 'ORBIT // LUNAR')
+    end
 
     -- Left Panel: Day & Status
     SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', toUnicode("周 // 天"))

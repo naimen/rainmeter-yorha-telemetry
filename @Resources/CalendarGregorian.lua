@@ -59,6 +59,9 @@ function Gregorian.Render(context)
     if SKIN:GetMeter('MeterCalHeader') then
         SKIN:Bang('!SetOption', 'MeterCalHeader', 'Text', defHdr)
     end
+    if SKIN:GetMeter('MeterCalMicroLabel') then
+        SKIN:Bang('!SetOption', 'MeterCalMicroLabel', 'Text', 'ORBIT // GREGORIAN')
+    end
 
     -- Left Panel: Day & Status
     SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', 'CYCLE // DAY')
