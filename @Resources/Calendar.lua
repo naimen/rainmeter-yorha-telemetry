@@ -70,15 +70,22 @@ local SOLAR_TERMS_DEF = {
     { name = "冬至", m = 12, c = 21.94 }
 }
 
+-- Gregorian Julian Day Number
+local function toJDN(y, m, d)
+    local a = math.floor((14 - m) / 12)
+    local y2 = y + 4800 - a
+    local m2 = m + 12 * a - 3
+    return d + math.floor((153 * m2 + 2) / 5) + 365 * y2 + math.floor(y2 / 4) - math.floor(y2 / 100) + math.floor(y2 / 400) - 32045
+end
+
 -- Gregorian to Chinese Lunar calculation
 local function getLunarDate(gYear, gMonth, gDay)
     if gYear < 1900 or gYear > 2100 then
         return { year = gYear, month = gMonth, day = gDay, isLeap = false }
     end
 
-    local baseTime = os.time{ year = 1900, month = 1, day = 31, hour = 0, min = 0, sec = 0 }
-    local targetTime = os.time{ year = gYear, month = gMonth, day = gDay, hour = 0, min = 0, sec = 0 }
-    local offset = math.floor((targetTime - baseTime) / 86400 + 0.5)
+    -- 2415051 is JDN for 1900-01-31 (Chinese New Year 1900)
+    local offset = toJDN(gYear, gMonth, gDay) - 2415051
 
     local lYear = 1900
     while lYear <= 2100 do
