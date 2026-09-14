@@ -216,10 +216,16 @@ const server = http.createServer((req, res) => {
   // Query parameter overrides
   if (q.has('ssdRead')) state.ssd.readAct = `${q.get('ssdRead')} %`;
   if (q.has('ssdWrite')) state.ssd.writeAct = `${q.get('ssdWrite')} %`;
+  if (q.has('ssdReadRate')) state.ssd.readRate = q.get('ssdReadRate');
+  if (q.has('ssdWriteRate')) state.ssd.writeRate = q.get('ssdWriteRate');
   if (q.has('nvmeRead')) state.nvme.readAct = `${q.get('nvmeRead')} %`;
   if (q.has('nvmeWrite')) state.nvme.writeAct = `${q.get('nvmeWrite')} %`;
+  if (q.has('nvmeReadRate')) state.nvme.readRate = q.get('nvmeReadRate');
+  if (q.has('nvmeWriteRate')) state.nvme.writeRate = q.get('nvmeWriteRate');
   if (q.has('hddRead')) state.hdd.readAct = `${q.get('hddRead')} %`;
   if (q.has('hddWrite')) state.hdd.writeAct = `${q.get('hddWrite')} %`;
+  if (q.has('hddReadRate')) state.hdd.readRate = q.get('hddReadRate');
+  if (q.has('hddWriteRate')) state.hdd.writeRate = q.get('hddWriteRate');
   if (q.has('cpuLoad')) state.cpu.totalLoad = `${q.get('cpuLoad')} %`;
   if (q.has('gpuLoad')) state.gpu.load = `${q.get('gpuLoad')} %`;
 
