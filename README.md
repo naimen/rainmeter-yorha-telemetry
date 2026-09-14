@@ -2,18 +2,24 @@
 
 A *NieR:Automata* YoRHa-themed telemetry and system monitoring skin suite for [Rainmeter](https://www.rainmeter.net/).
 
-![YoRHa Telemetry Preview](preview.png)
+![YoRHa 1440p Desktop Setup](1440p-desktop.png)
+
+<p align="center">
+  <img src="preview.png" alt="YoRHa Suite Stack Preview" width="420" />
+</p>
 
 ## Features
 
 - **Full Telemetry Suite**:
   - **Clock**: Digital military clock with date display and YoRHa interface accents.
-  - **Calendar**: Clean monthly calendar with Lua-powered grid calculations and week indicators.
+  - **Weather HUD**: 24-hour meteorological chrono-telemetry and conditions (click Clock to toggle).
+  - **Calendar**: Clean monthly calendar with Lua-powered grid calculations and ISO week indicators.
+  - **Lunar HUD**: Astronomical solar ecliptic and lunar phase cycle telemetry (click Calendar to toggle).
   - **CPU**: Multi-core telemetry, frequency metrics, load graphs, and temperature monitoring.
   - **GPU**: Core load, VRAM utilization, clocks, and thermal tracking.
-  - **RAM**: Memory usage statistics, active swap/pagefile telemetry.
-  - **Fans**: Real-time RPM tachometer gauges and cooling duty cycles.
+  - **RAM**: Memory usage statistics and active swap/pagefile telemetry.
   - **Disks**: Drive space indicators, activity meters, and storage diagnostics.
+  - **Fans**: Real-time RPM tachometer gauges and cooling duty cycles.
   - **Network**: Real-time up/down bandwidth throughput gauges and IP status.
 - **Dual Visual Themes**:
   - **Light Theme**: Authentic NieR:Automata sand-paper matte styling, smoky glass textures, dark tape banners, and horizon guideline accents.
@@ -21,6 +27,49 @@ A *NieR:Automata* YoRHa-themed telemetry and system monitoring skin suite for [R
 - **Modular Widgets**: Individual draggable widgets for each telemetry module (`Clock`, `Calendar`, `CPU`, `GPU`, `RAM`, `Fans`, `Disks`, `Network`).
 - **Profile Switcher** (`Set-Profile.ps1`):
   - Switch between `Light`, `Dark`, and `Interleaved` alternating themes across modules with a single command.
+
+---
+
+## Module Showcase
+
+### Clock & Weather HUD
+*Click anywhere on the widget or top badge to toggle between Clock and Weather modes.*
+
+| System Clock | Weather Telemetry HUD |
+| :---: | :---: |
+| ![Clock](Clock/clock.png) | ![Weather](Clock/weather.png) |
+| *Digital military clock with date & tactical accents* | *24-hour meteorological chrono-telemetry HUD* |
+
+### Tactical Calendar
+*Click anywhere on the widget to toggle between Gregorian matrix and Astronomical Lunar views.*
+
+| Gregorian Calendar | Lunar / Orbit Telemetry |
+| :---: | :---: |
+| ![Gregorian Calendar](Calendar/greogori.png) | ![Lunar Calendar](Calendar/lunar.png) |
+| *Monthly calendar grid with ISO week numbers* | *Astronomical solar orbit & lunar phases* |
+
+### Processor Telemetry
+
+| CPU Telemetry | GPU Telemetry |
+| :---: | :---: |
+| ![CPU](CPU/cpu.png) | ![GPU](GPU/gpu.png) |
+| *Multi-core load graphs, frequencies & thermals* | *Core load, VRAM utilization, clocks & thermals* |
+
+### Memory & Storage
+
+| RAM / Memory | Disks & Storage |
+| :---: | :---: |
+| ![RAM](RAM/memory.png) | ![Disks](Disks/disks.png) |
+| *Physical RAM allocation & active swap metrics* | *Drive capacity indicators, free space & activity* |
+
+### Cooling & Network
+
+| Fans & Cooling | Network I/O |
+| :---: | :---: |
+| ![Fans](Fans/fans.png) | ![Network](Network/network.png) |
+| *Real-time RPM tachometers & duty cycles* | *Real-time up/down bandwidth gauges & traffic* |
+
+---
 
 ## Requirements & Fonts
 
@@ -41,7 +90,7 @@ You can also use 100% free and open-source Google Fonts (SIL Open Font License):
 
 You can configure active font families at any time in `@Resources/Variables-Light.inc / Variables-Dark.inc` (`#FontHeader#` and `#FontClockNum#`).
 
-
+---
 
 ## Quick Start & Usage
 
