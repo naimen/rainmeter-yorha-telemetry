@@ -186,6 +186,21 @@ local function toJDN(y, m, d)
     return d + math.floor((153 * m2 + 2) / 5) + 365 * y2 + math.floor(y2 / 4) - math.floor(y2 / 100) + math.floor(y2 / 400) - 32045
 end
 
+-- Julian Day Number to Gregorian Date (year, month, day)
+local function fromJDN(jdn)
+    local l = jdn + 68569
+    local n = math.floor((4 * l) / 146097)
+    l = l - math.floor((146097 * n + 3) / 4)
+    local i = math.floor((4000 * (l + 1)) / 1461001)
+    l = l - math.floor((1461 * i) / 4) + 31
+    local j = math.floor((80 * l) / 2447)
+    local d = l - math.floor((2447 * j) / 80)
+    l = math.floor(j / 11)
+    local m = j + 2 - 12 * l
+    local y = 100 * (n - 49) + i + l
+    return y, m, d
+end
+
 -- Gregorian to Chinese Lunar calculation
 local function getLunarDate(gYear, gMonth, gDay)
     if gYear < 2000 or gYear > 2100 then
@@ -296,11 +311,56 @@ local function getSolarTermOnDay(year, month, day)
     return nil
 end
 
+-- Calculate Sun's Ecliptic Angle (0° = 春分 at 12 o'clock, 15° per solar term)
+local function getEclipticAngle(year, month, day)
+    local terms = getSolarTermsForYear(year)
+    if #terms == 0 then return 0 end
+
+    local tCurr = nil
+    local tNext = nil
+    local idxCurr = 0
+
+    for i = 1, 24 do
+        local t = terms[i]
+        if month > t.month or (month == t.month and day >= t.day) then
+            tCurr = t
+            idxCurr = i
+        else
+            tNext = t
+            break
+        end
+    end
+
+    if not tCurr then
+        local prevTerms = getSolarTermsForYear(year - 1)
+        tCurr = prevTerms[24] or { year = year - 1, month = 12, day = 21 }
+        idxCurr = 24
+        tNext = terms[1]
+    elseif not tNext then
+        local nextTerms = getSolarTermsForYear(year + 1)
+        tNext = nextTerms[1] or { year = year + 1, month = 1, day = 5 }
+    end
+
+    local jdnCurr = toJDN(tCurr.year, tCurr.month, tCurr.day)
+    local jdnNext = toJDN(tNext.year, tNext.month, tNext.day)
+    local jdnToday = toJDN(year, month, day)
+
+    local span = jdnNext - jdnCurr
+    if span <= 0 then span = 15 end
+    local elapsed = jdnToday - jdnCurr
+    local frac = math.max(0, math.min(1, elapsed / span))
+
+    -- Base angle: index 6 (春分) is 0°, each index is 15°
+    local baseAngle = ((idxCurr - 6) * 15) % 360
+    if baseAngle < 0 then baseAngle = baseAngle + 360 end
+
+    return (baseAngle + frac * 15) % 360
+end
+
 function Lunar.Render(context)
     local year = context.year
     local month = context.month
     local day = context.day
-    local slots = context.slots
 
     local lunarToday = getLunarDate(year, month, day)
 
@@ -330,29 +390,108 @@ function Lunar.Render(context)
 
     -- Left Panel: Day & Status
     SKIN:Bang('!SetOption', 'MeterCalDayLabel', 'Text', toUnicode("CYCLE // 星耀"))
-    SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontFace', '#FontClockNum#')
-    SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontSize', '28')
+    SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontFace', '#FontLunar#')
+    SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontSize', '32')
+    SKIN:Bang('!SetOption', 'MeterCalDayVal', 'FontWeight', '900')
     SKIN:Bang('!SetOption', 'MeterCalDayVal', 'Text', toUnicode(lunarDayStr))
 
     -- Current Solar Term (节气)
-    SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontFace', '#FontSub#')
-    SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontSize', '15')
+    SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontFace', '#FontLunar#')
+    SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontSize', '14')
+    SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontWeight', '700')
     SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'Text', toUnicode(currentSolarTerm))
 
     -- 天干地支 Year & Lunar Month
-    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontFace', '#FontSub#')
-    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '9')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontFace', '#FontLunar#')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '9.5')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontWeight', '700')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', toUnicode(yearGanZhi .. " " .. monthStr))
+
+    -- Subtle Ecliptic Orbit Ring & Sun Marker (15° per solar term)
+    local eclipticAngle = getEclipticAngle(year, month, day)
+    local cx = tonumber(SKIN:GetVariable('EclipticCenterX', '77'))
+    local cy = tonumber(SKIN:GetVariable('EclipticCenterY', '110'))
+    local rx = tonumber(SKIN:GetVariable('EclipticRadiusX', '50'))
+    local ry = tonumber(SKIN:GetVariable('EclipticRadiusY', '50'))
+
+    -- 0° (春分 / Spring Equinox) at 12 o'clock (top), rotating clockwise on ellipse
+    local rad = math.rad(eclipticAngle)
+    local sunX = cx + rx * math.sin(rad)
+    local sunY = cy - ry * math.cos(rad)
+
+    SKIN:Bang('!SetVariable', 'EclipticSunX', string.format("%.1f", sunX))
+    SKIN:Bang('!SetVariable', 'EclipticSunY', string.format("%.1f", sunY))
+    if SKIN:GetMeter('MeterCalEcliptic') then
+        SKIN:Bang('!ShowMeter', 'MeterCalEcliptic')
+    end
+
+    -- Subtle Moon Phase Watermark (40x40 space beneath calendar matrix)
+    local moonR = tonumber(SKIN:GetVariable('MoonRadius', '20')) or 20
+    local moonCX = tonumber(SKIN:GetVariable('MoonCenterX', '335')) or 335
+    local ld = lunarToday.day
+    local dx = 0
+    if ld <= 15 then
+        dx = - ((ld - 1) / 14) * (2.2 * moonR)
+    else
+        dx = ((30 - ld) / 15) * (2.2 * moonR)
+    end
+    local darkX = moonCX + dx
+
+    SKIN:Bang('!SetVariable', 'MoonDarkX', string.format("%.1f", darkX))
+    if SKIN:GetMeter('MeterCalMoonPhase') then
+        SKIN:Bang('!ShowMeter', 'MeterCalMoonPhase')
+    end
 
     -- Headers: Column 0 is 气 (Solar Term column), Columns 1..7 are Japanese Weekdays (月..日)
     local jpHeaders = { "气", "月", "火", "水", "木", "金", "土", "日" }
     for i = 0, 7 do
-        SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontFace', '#FontClockNum#')
+        SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontFace', '#FontLunar#')
+        SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontSize', '10')
+        SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontWeight', '700')
+        if i == 0 then
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorMuted#')
+        elseif i == 6 then
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorCalHdrSat#')
+        elseif i == 7 then
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorCalHdrSun#')
+        else
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorAccent#')
+        end
         SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'Text', toUnicode(jpHeaders[i + 1]))
     end
 
+    -- Full Lunar Month Matrix Generation:
+    -- Find JDN of 初一 (Day 1 of current lunar month)
+    local jdnToday = toJDN(year, month, day)
+    local jdnChuYi = jdnToday - (lunarToday.day - 1)
+    local startOffset = jdnChuYi % 7 -- 0 = Mon (月), 1 = Tue (火), ..., 6 = Sun (日)
+
+    -- Check if this lunar month has 29 or 30 days
+    local testY, testM, testD = fromJDN(jdnChuYi + 29)
+    local testLunar = getLunarDate(testY, testM, testD)
+    local daysInLunarMonth = (testLunar.day == 30) and 30 or 29
+
+    -- Build 35 lunar slots (5 weeks x 7 days) centered on the full lunar month
+    local lunarSlots = {}
+    local jdnStart = jdnChuYi - startOffset
+    for i = 0, 34 do
+        local j = jdnStart + i
+        local gY, gM, gD = fromJDN(j)
+        local lDate = getLunarDate(gY, gM, gD)
+        local isCurr = (j >= jdnChuYi and j < jdnChuYi + daysInLunarMonth)
+        local isToday = (j == jdnToday)
+        table.insert(lunarSlots, {
+            gYear = gY,
+            gMonth = gM,
+            gDay = gD,
+            lunarDay = lDate.day,
+            current = isCurr,
+            isToday = isToday
+        })
+    end
+
     -- Generate Columns:
-    -- Column 0: Solar term in that week row, or □ if none
+    -- Column 0: Solar term in that week row, or · if none
     -- Columns 1..7: Pure lunar dates (初一..三十)
     local colWkLunar = {}
     local colDays = { {}, {}, {}, {}, {}, {}, {} }
@@ -361,23 +500,11 @@ function Lunar.Render(context)
         local rowSolarTerm = nil
         for c = 1, 7 do
             local sIdx = (r - 1) * 7 + c
-            local slot = slots[sIdx]
-            if slot.current then
-                local sYear = year
-                local sMonth = month + slot.monthOffset
-                if sMonth < 1 then
-                    sMonth = 12
-                    sYear = sYear - 1
-                elseif sMonth > 12 then
-                    sMonth = 1
-                    sYear = sYear + 1
-                end
-
-                local term = getSolarTermOnDay(sYear, sMonth, slot.day)
-                if term then
-                    rowSolarTerm = term
-                    break
-                end
+            local slot = lunarSlots[sIdx]
+            local term = getSolarTermOnDay(slot.gYear, slot.gMonth, slot.gDay)
+            if term then
+                rowSolarTerm = term
+                break
             end
         end
 
@@ -389,44 +516,52 @@ function Lunar.Render(context)
 
         for c = 1, 7 do
             local sIdx = (r - 1) * 7 + c
-            local slot = slots[sIdx]
+            local slot = lunarSlots[sIdx]
             local colStr = ""
 
             if not slot.current then
                 colStr = toUnicode("·")
             else
-                local sYear = year
-                local sMonth = month + slot.monthOffset
-                if sMonth < 1 then
-                    sMonth = 12
-                    sYear = sYear - 1
-                elseif sMonth > 12 then
-                    sMonth = 1
-                    sYear = sYear + 1
-                end
-
-                local sLunar = getLunarDate(sYear, sMonth, slot.day)
-                local dayName = LUNAR_DAYS[sLunar.day] or string.format("%02d", sLunar.day)
-                colStr = toUnicode(dayName)
-
+                local dayName = LUNAR_DAYS[slot.lunarDay] or string.format("%02d", slot.lunarDay)
                 if slot.isToday then
-                    colStr = "｢" .. colStr .. "｣"
+                    colStr = toUnicode("｢" .. dayName .. "｣")
+                else
+                    colStr = toUnicode(dayName)
                 end
             end
-            table.insert(colDays[c], toUnicode(colStr))
+            table.insert(colDays[c], colStr)
         end
     end
 
-    -- Apply Column Texts
-    for c = 0, 7 do
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontFace', '#FontSub#')
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontSize', '10')
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'LineSpacing', '6')
-    end
-    SKIN:Bang('!SetOption', 'MeterCalCol_0', 'Text', table.concat(colWkLunar, "\n"))
+    -- Apply Matrix to Rigid 5x8 Grid (40 cells)
+    for r = 1, 5 do
+        local termMeter = string.format('MeterCal_%d_0', r)
+        SKIN:Bang('!SetOption', termMeter, 'FontFace', '#FontLunar#')
+        SKIN:Bang('!SetOption', termMeter, 'FontSize', '10.5')
+        SKIN:Bang('!SetOption', termMeter, 'FontWeight', '700')
+        SKIN:Bang('!SetOption', termMeter, 'FontColor', '#ColorMuted#')
+        SKIN:Bang('!SetOption', termMeter, 'Text', colWkLunar[r])
 
-    for c = 1, 7 do
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'Text', table.concat(colDays[c], "\n"))
+        for c = 1, 7 do
+            local cellMeter = string.format('MeterCal_%d_%d', r, c)
+            local sIdx = (r - 1) * 7 + c
+            local slot = lunarSlots[sIdx]
+            SKIN:Bang('!SetOption', cellMeter, 'FontFace', '#FontLunar#')
+            SKIN:Bang('!SetOption', cellMeter, 'FontSize', '10.5')
+            SKIN:Bang('!SetOption', cellMeter, 'FontWeight', '700')
+            if slot.isToday then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorPaper#')
+            elseif not slot.current then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorMutedTrans#')
+            elseif c == 7 then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorCalWeekendSun#')
+            elseif c == 6 then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorCalWeekendSat#')
+            else
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorPaper#')
+            end
+            SKIN:Bang('!SetOption', cellMeter, 'Text', colDays[c][r])
+        end
     end
 end
 

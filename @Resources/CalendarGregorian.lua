@@ -77,23 +77,61 @@ function Gregorian.Render(context)
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '8.5')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', monthName .. ' ' .. tostring(year))
 
+    -- Hide Ecliptic ring and Moon Phase in Gregorian mode
+    if SKIN:GetMeter('MeterCalEcliptic') then
+        SKIN:Bang('!HideMeter', 'MeterCalEcliptic')
+    end
+    if SKIN:GetMeter('MeterCalMoonPhase') then
+        SKIN:Bang('!HideMeter', 'MeterCalMoonPhase')
+    end
+
     -- English Weekday Headers
     local enHeaders = { "WK", "MO", "TU", "WE", "TH", "FR", "SA", "SU" }
     for i = 0, 7 do
         SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontFace', '#FontSub#')
+        SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontSize', '10')
+        SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontWeight', '700')
+        if i == 0 then
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorMuted#')
+        elseif i == 6 then
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorCalHdrSat#')
+        elseif i == 7 then
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorCalHdrSun#')
+        else
+            SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'FontColor', '#ColorAccent#')
+        end
         SKIN:Bang('!SetOption', 'MeterCalHdr_' .. i, 'Text', enHeaders[i + 1])
     end
 
-    -- Column Text
-    for c = 0, 7 do
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontFace', '#FontAnime#')
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'FontSize', '15')
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'LineSpacing', '0')
-    end
-    SKIN:Bang('!SetOption', 'MeterCalCol_0', 'Text', table.concat(colWk, "\n"))
+    -- Rigid 5x8 Matrix Grid
+    for r = 1, 5 do
+        local wkMeter = string.format('MeterCal_%d_0', r)
+        SKIN:Bang('!SetOption', wkMeter, 'FontFace', '#FontAnime#')
+        SKIN:Bang('!SetOption', wkMeter, 'FontSize', '15')
+        SKIN:Bang('!SetOption', wkMeter, 'FontWeight', '400')
+        SKIN:Bang('!SetOption', wkMeter, 'FontColor', '#ColorMuted#')
+        SKIN:Bang('!SetOption', wkMeter, 'Text', colWk[r])
 
-    for c = 1, 7 do
-        SKIN:Bang('!SetOption', 'MeterCalCol_' .. c, 'Text', table.concat(colDays[c], "\n"))
+        for c = 1, 7 do
+            local cellMeter = string.format('MeterCal_%d_%d', r, c)
+            local sIdx = (r - 1) * 7 + c
+            local slot = slots[sIdx]
+            SKIN:Bang('!SetOption', cellMeter, 'FontFace', '#FontAnime#')
+            SKIN:Bang('!SetOption', cellMeter, 'FontSize', '15')
+            SKIN:Bang('!SetOption', cellMeter, 'FontWeight', '400')
+            if slot.isToday then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorPaper#')
+            elseif not slot.current then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorMutedTrans#')
+            elseif c == 7 then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorCalWeekendSun#')
+            elseif c == 6 then
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorCalWeekendSat#')
+            else
+                SKIN:Bang('!SetOption', cellMeter, 'FontColor', '#ColorPaper#')
+            end
+            SKIN:Bang('!SetOption', cellMeter, 'Text', colDays[c][r])
+        end
     end
 end
 
