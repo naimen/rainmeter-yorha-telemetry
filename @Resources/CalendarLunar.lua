@@ -402,14 +402,7 @@ function Lunar.Render(context)
     SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'Text', toUnicode(currentSolarTerm))
 
     if SKIN:GetMeter('MeterCalJulianVal') then
-        local julianFmt = SKIN:GetVariable('CalJulianFormat', 'JD // %s')
-        local julianText = string.format(julianFmt, context.julianRoman or "")
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontFace', '#FontTactical#')
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontSize', '9')
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontWeight', '700')
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontColor', '#ColorPaper#')
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'Text', julianText)
-        SKIN:Bang('!ShowMeter', 'MeterCalJulianVal')
+        SKIN:Bang('!HideMeter', 'MeterCalJulianVal')
     end
 
     -- 天干地支 Year & Lunar Month
