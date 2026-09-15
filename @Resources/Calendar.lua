@@ -32,7 +32,7 @@ local function toAstronomicalJulianRoman(jdn)
     local rThousands = toRoman(thousands)
     local rRemainder = toRoman(remainder)
     if rThousands ~= "" and rRemainder ~= "" then
-        return rThousands .. "·" .. rRemainder
+        return rThousands .. "[\\x00B7]" .. rRemainder
     elseif rThousands ~= "" then
         return rThousands
     else
