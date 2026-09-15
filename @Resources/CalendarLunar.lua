@@ -413,7 +413,7 @@ function Lunar.Render(context)
 
     -- Subtle Ecliptic Orbit Ring & Sun Marker (15° per solar term)
     local eclipticAngle = getEclipticAngle(year, month, day)
-    local cx = tonumber(SKIN:GetVariable('EclipticCenterX', '77'))
+    local cx = tonumber(SKIN:GetVariable('EclipticCenterX', '91'))
     local cy = tonumber(SKIN:GetVariable('EclipticCenterY', '110'))
     local rx = tonumber(SKIN:GetVariable('EclipticRadiusX', '50'))
     local ry = tonumber(SKIN:GetVariable('EclipticRadiusY', '50'))
