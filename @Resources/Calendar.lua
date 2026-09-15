@@ -9,6 +9,21 @@ local isLunar = false
 local Gregorian = nil
 local Lunar = nil
 
+local function toRoman(num)
+    num = tonumber(num)
+    if not num or num <= 0 then return "" end
+    local vals = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 }
+    local syms = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" }
+    local res = ""
+    for i = 1, #vals do
+        while num >= vals[i] do
+            res = res .. syms[i]
+            num = num - vals[i]
+        end
+    end
+    return res
+end
+
 function Initialize()
     local resPath = SKIN:GetVariable('@')
     if not resPath or resPath == "" then
@@ -40,6 +55,8 @@ function Update()
     local year = now.year
     local month = now.month
     local day = now.day
+    local dayOfYear = now.yday or tonumber(os.date("%j")) or 1
+    local julianRoman = toRoman(dayOfYear)
 
     local weekNum = os.date("%V")
     if not weekNum or weekNum == "" or weekNum == "%V" then
@@ -71,11 +88,16 @@ function Update()
         year = year,
         month = month,
         day = day,
+        dayOfYear = dayOfYear,
+        julianRoman = julianRoman,
         weekNum = weekNum,
         monthName = monthName,
         slots = slots,
         isLunar = isLunar
     }
+
+    SKIN:Bang('!SetVariable', 'CalDayOfYear', tostring(dayOfYear))
+    SKIN:Bang('!SetVariable', 'CalJulianRoman', julianRoman)
 
     if not isLunar then
         Gregorian.Render(context)

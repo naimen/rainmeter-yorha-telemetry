@@ -73,6 +73,17 @@ function Gregorian.Render(context)
     SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'FontSize', '14')
     SKIN:Bang('!SetOption', 'MeterCalWeekCombined', 'Text', 'WEEK ' .. tostring(weekNum))
 
+    if SKIN:GetMeter('MeterCalJulianVal') then
+        local julianFmt = SKIN:GetVariable('CalJulianFormat', 'JD // %s')
+        local julianText = string.format(julianFmt, context.julianRoman or "")
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontFace', '#FontTactical#')
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontSize', '10.5')
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontWeight', '700')
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontColor', '#ColorPaper#')
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'Text', julianText)
+        SKIN:Bang('!ShowMeter', 'MeterCalJulianVal')
+    end
+
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontFace', '#FontMain#')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '8.5')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', monthName .. ' ' .. tostring(year))
