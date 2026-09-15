@@ -85,7 +85,7 @@ function Gregorian.Render(context)
     end
 
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontFace', '#FontMain#')
-    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '10')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '9')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontWeight', '700')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontColor', '#ColorPaper#')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', monthName .. ' ' .. tostring(year))
