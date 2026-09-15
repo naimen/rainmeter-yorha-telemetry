@@ -78,14 +78,16 @@ function Gregorian.Render(context)
         local julianText = string.format(julianFmt, context.julianRoman or "")
         SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontFace', '#FontTactical#')
         SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontSize', '7')
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontWeight', '700')
-        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontColor', '#ColorPaper#')
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontWeight', '400')
+        SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'FontColor', '#ColorMuted#')
         SKIN:Bang('!SetOption', 'MeterCalJulianVal', 'Text', julianText)
         SKIN:Bang('!ShowMeter', 'MeterCalJulianVal')
     end
 
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontFace', '#FontMain#')
-    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '8.5')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontSize', '10')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontWeight', '700')
+    SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'FontColor', '#ColorPaper#')
     SKIN:Bang('!SetOption', 'MeterCalMonthVal', 'Text', monthName .. ' ' .. tostring(year))
 
     -- Hide Ecliptic ring and Moon Phase in Gregorian mode
