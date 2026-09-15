@@ -24,6 +24,29 @@ local function toRoman(num)
     return res
 end
 
+local function toAstronomicalJulianRoman(jdn)
+    jdn = tonumber(jdn)
+    if not jdn or jdn <= 0 then return "" end
+    local thousands = math.floor(jdn / 1000)
+    local remainder = jdn % 1000
+    local rThousands = toRoman(thousands)
+    local rRemainder = toRoman(remainder)
+    if rThousands ~= "" and rRemainder ~= "" then
+        return rThousands .. "·" .. rRemainder
+    elseif rThousands ~= "" then
+        return rThousands
+    else
+        return rRemainder
+    end
+end
+
+local function toJDN(y, m, d)
+    local a = math.floor((14 - m) / 12)
+    local y2 = y + 4800 - a
+    local m2 = m + 12 * a - 3
+    return d + math.floor((153 * m2 + 2) / 5) + 365 * y2 + math.floor(y2 / 4) - math.floor(y2 / 100) + math.floor(y2 / 400) - 32045
+end
+
 function Initialize()
     local resPath = SKIN:GetVariable('@')
     if not resPath or resPath == "" then
@@ -56,7 +79,8 @@ function Update()
     local month = now.month
     local day = now.day
     local dayOfYear = now.yday or tonumber(os.date("%j")) or 1
-    local julianRoman = toRoman(dayOfYear)
+    local jdn = toJDN(year, month, day)
+    local julianRoman = toAstronomicalJulianRoman(jdn)
 
     local weekNum = os.date("%V")
     if not weekNum or weekNum == "" or weekNum == "%V" then
@@ -89,6 +113,7 @@ function Update()
         month = month,
         day = day,
         dayOfYear = dayOfYear,
+        jdn = jdn,
         julianRoman = julianRoman,
         weekNum = weekNum,
         monthName = monthName,
@@ -97,6 +122,7 @@ function Update()
     }
 
     SKIN:Bang('!SetVariable', 'CalDayOfYear', tostring(dayOfYear))
+    SKIN:Bang('!SetVariable', 'CalJulianDate', tostring(jdn))
     SKIN:Bang('!SetVariable', 'CalJulianRoman', julianRoman)
 
     if not isLunar then
